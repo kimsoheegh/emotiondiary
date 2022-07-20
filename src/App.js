@@ -1,28 +1,94 @@
+import React, { useReducer, useRef } from "react";
+
 import "./App.css";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
-
-import RouteTest from "./components/RouteTest";
 
 import Home from "./pages/Home";
 import Edit from "./pages/Edit";
 import New from "./pages/New";
 import Diary from "./pages/Diary";
 
+const reducer = (state, action) => {
+  let newState = [];
+  switch (action.type) {
+    case "INIT": {
+      return action.data;
+    }
+    case "CREATE": {
+      const newItem = {
+        ...action.data,
+      };
+      newState = [newItem, ...state];
+      break;
+    }
+    case "REMOVE": {
+      newState = state.filter((it) => it.id !== action.targetId);
+      break;
+    }
+    case "EDIT": {
+      newState = state.map((it) =>
+        it.id === action.data.id ? { ...action.data } : it
+      );
+      break;
+    }
+    default:
+      return state;
+  }
+  return newState;
+};
+
+export const DiaryStateContext = React.createContext();
+export const DiaryDispatchContext = React.createContext();
+
 function App() {
+  const [data, dispatch] = useReducer(reducer, []);
+
+  const dataId = useRef(0);
+
+  //CREATE
+  const onCreate = (date, content, emotion) => {
+    dispatch({
+      type: "CREATE",
+      data: {
+        id: dataId.current,
+        date: new Date(date).getTime,
+        content,
+        emotion,
+      },
+    });
+    dataId.current += 1;
+  };
+
+  const onRemove = (targetId) => {
+    dispatch({ type: "REMOVE", targetId });
+  };
+
+  const onEdit = (targetId, date, content, emotion) => {
+    dispatch({
+      data: {
+        id: dataId,
+        date: new Date(date).getDate,
+        content,
+        emotion,
+      },
+    });
+  };
   return (
-    <BrowserRouter>
-      <div className="App">
-        <h2>App.js</h2>
-        <Routes>
-          <Route path="/" element={<Home />} />
-          <Route path="/new" element={<New />} />
-          <Route path="/edit" element={<Edit />} />
-          <Route path="/diary/:1" element={<Diary />} />
-          <Route path="/diary" element={<Diary />} />
-        </Routes>
-        <RouteTest />
-      </div>
-    </BrowserRouter>
+    <DiaryStateContext.Provider value={data}>
+      <DiaryDispatchContext.Provider value={(onCreate, onRemove, onEdit)}>
+        <BrowserRouter>
+          <div className="App">
+            <Routes>
+              <Route path="/" element={<Home />} />
+              <Route path="/new" element={<New />} />
+              <Route path="/edit" element={<Edit />} />
+              <Route path="/diary/:1" element={<Diary />} />
+              <Route path="/diary" element={<Diary />} />
+            </Routes>
+          </div>
+        </BrowserRouter>
+      </DiaryDispatchContext.Provider>
+    </DiaryStateContext.Provider>
   );
 }
 
