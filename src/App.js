@@ -15,10 +15,7 @@ const reducer = (state, action) => {
       return action.data;
     }
     case "CREATE": {
-      const newItem = {
-        ...action.data,
-      };
-      newState = [newItem, ...state];
+      newState = [action.data, ...state];
       break;
     }
     case "REMOVE": {
@@ -40,9 +37,41 @@ const reducer = (state, action) => {
 export const DiaryStateContext = React.createContext();
 export const DiaryDispatchContext = React.createContext();
 
-function App() {
-  const [data, dispatch] = useReducer(reducer, []);
+const dummyData = [
+  {
+    id: 1,
+    emotion: 1,
+    content: "오늘의 일기 1번",
+    date: 1658388254771,
+  },
+  {
+    id: 2,
+    emotion: 2,
+    content: "오늘의 일기 2번",
+    date: 1658388254772,
+  },
+  {
+    id: 3,
+    emotion: 3,
+    content: "오늘의 일기 3번",
+    date: 1658388254773,
+  },
+  {
+    id: 4,
+    emotion: 4,
+    content: "오늘의 일기 4번",
+    date: 1658388254774,
+  },
+  {
+    id: 5,
+    emotion: 5,
+    content: "오늘의 일기 5번",
+    date: 1658388254775,
+  },
+];
 
+function App() {
+  const [data, dispatch] = useReducer(reducer, dummyData);
   const dataId = useRef(0);
 
   //CREATE
@@ -51,7 +80,7 @@ function App() {
       type: "CREATE",
       data: {
         id: dataId.current,
-        date: new Date(date).getTime,
+        date: new Date(date).getTime(),
         content,
         emotion,
       },
@@ -75,15 +104,14 @@ function App() {
   };
   return (
     <DiaryStateContext.Provider value={data}>
-      <DiaryDispatchContext.Provider value={(onCreate, onRemove, onEdit)}>
+      <DiaryDispatchContext.Provider value={{ onCreate, onRemove, onEdit }}>
         <BrowserRouter>
           <div className="App">
             <Routes>
               <Route path="/" element={<Home />} />
               <Route path="/new" element={<New />} />
-              <Route path="/edit" element={<Edit />} />
-              <Route path="/diary/:1" element={<Diary />} />
-              <Route path="/diary" element={<Diary />} />
+              <Route path="/edit/:id" element={<Edit />} />
+              <Route path="/diary/:id" element={<Diary />} />
             </Routes>
           </div>
         </BrowserRouter>
